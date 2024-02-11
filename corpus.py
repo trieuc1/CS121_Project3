@@ -1,4 +1,4 @@
-from token import Token
+from tokenhandler import Token
 from document import Document
 from posting import Posting
 from math import log
