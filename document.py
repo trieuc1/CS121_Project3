@@ -41,12 +41,21 @@ class Document:
         returns bookkeeper id
         """
         return self.bookkeeper_id
+    
+    def get_meta_weight(self) -> float:
+
+        # TODO: fill in this function
+        return 0.0
+
 
 
     def get_unique_strings(self) -> list:
         """
         returns all the unique strings/tokens in a doc
         """
+        for x in self.doc_tokens:
+            if x not in self.unique_strings:
+                self.unique_strings.add(x)
         return self.unique_strings
 
 
