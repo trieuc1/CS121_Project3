@@ -21,12 +21,12 @@ def initialize_corpus():
     bookkeeper_ids = get_bookkeeper_id_set()
 
     for book_id in bookkeeper_ids:
-        text = get_html_text(book_id)
-        lemmatized = lemmatize_text(text)
+        # text = get_html_text(book_id)
+        tags = get_word_tags(book_id)
+        lemmatized = lemmatize_text(tags)
         tokenize(corpus, book_id, lemmatized, NUMBER_OF_GRAMS)
 
     corpus.create_all_doc_postings()
-
     return corpus
 
 def get_dict_from_bookkeeper() -> dict:
@@ -48,18 +48,19 @@ def get_bookkeeper_id_set() -> set:
 
     return unique_ids
 
-def get_html_text(book_id: str) -> str:
-    path_string = 'WEBPAGES_RAW/' + book_id
+# def get_html_text(book_id: str) -> str:
+#     path_string = 'WEBPAGES_RAW/' + book_id
 
-    with open(path_string, 'r', encoding='utf-8') as file:
-        content = file.read()
+#     with open(path_string, 'r', encoding='utf-8') as file:
+#         content = file.read()
 
-        try:
-            html_text = word_tokenize(BeautifulSoup(content, "lxml").get_text())
-        except (Exception) as error:
-            print(error)
-            return ""
-        
+#         try:
+#             html_text = BeautifulSoup(content, "lxml").get_text()
+#             return html_text
+#         except (Exception) as error:
+#             print(error)
+#             return ""
+
 def convert_tag(tag: str) -> str:
     if tag.startswith('N'):
         return 'n'  # noun
@@ -72,26 +73,47 @@ def convert_tag(tag: str) -> str:
     else:
         return None
 
-
-def lemmatize_text(html_text: list[str]) -> list:
+def get_word_tags(book_id: str) -> list:
+    """
+    returns list of tuple of words and their associated tags from html
     
+    [(word, meta_tag)]
+    """
+    path_string = 'WEBPAGES_RAW/' + book_id
+
+    with open(path_string, 'r', encoding='utf-8') as file:
+        content = file.read()
+        html_w_tags = BeautifulSoup(content, 'html.parser')
+        tags = []
+        for element in html_w_tags.find_all():
+            if hasattr(element, 'text'):
+                text = element.text.strip()
+                words = text.split()
+                for word in words:
+                    tags.append((word.lower(), element.name))
+    return tags
+
+
+def lemmatize_text(tags: list) -> list:
     lemmatized = []
-     
+    html_list = [word[0] for word in tags]
+    html_text = html_list.join(" ")
+    
     if html_text:
-        html_text = nltk.pos_tag(html_text)
+        html_text_pos = nltk.pos_tag(word_tokenize(html_text))
         lemmatizer = WordNetLemmatizer()
 
-        for word_tuple in html_text:
-
+        for i in range(len(html_text_pos)):
+            word_tuple = html_text_pos[i]
             word = word_tuple[0]
             word_tag = convert_tag(word_tuple[1]) #because its a different tag than lemmetize WordNet
     
             if word not in STOP_WORDS:
         
                 if word_tag:
-                    lemmatized.append(lemmatizer.lemmatize(word, pos=word_tag))
+                    lemmatized.append((lemmatizer.lemmatize(word, pos=word_tag), tags[i][1]))
                 else:
-                    lemmatized.append(lemmatizer.lemmatize(word))
+                    lemmatized.append((lemmatizer.lemmatize(word), tags[i][1]))
     
     return lemmatized
 

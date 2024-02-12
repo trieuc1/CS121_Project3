@@ -14,6 +14,12 @@ class Token:
         self.token_id = Token.token_id
         self.token_string = token_string
         self.postings = []
+    
+    def formatted_postings(self, idf: float):
+        formatted_postings = []
+        for post in self.postings:
+            formatted_postings.append(post.get_formatted_posting(idf))
+        return formatted_postings
 
 
     def get_token_id(self) -> int:

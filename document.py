@@ -4,7 +4,9 @@ class Document:
     def __init__(self, bookkeeper_id: int, doc_tokens: list):
         Document.doc_id += 1
         self.doc_id = Document.doc_id
-        self.doc_tokens = doc_tokens
+        # [(token, tag)]
+        self.doc_tokens_w_tags = doc_tokens
+        self.doc_tokens = [token[0] for token in doc_tokens]
         self.unique_strings = set()
         self.bookkeeper_id = bookkeeper_id
 
@@ -41,13 +43,6 @@ class Document:
         returns bookkeeper id
         """
         return self.bookkeeper_id
-    
-    def get_meta_weight(self) -> float:
-
-        # TODO: fill in this function
-        return 0.0
-
-
 
     def get_unique_strings(self) -> list:
         """
@@ -76,3 +71,37 @@ class Document:
             if self.doc_tokens[index] == token:
                 indices.append(index)
         return indices
+
+    
+
+    def get_metatag_score(self, token:str) -> float:
+        """
+        returns a score of importance for each occurance of 
+        the token based on the meta tag associated with it
+        """
+        indices = self.get_token_indices(token)
+        token_tags = []
+        score = 0
+        for index in indices:
+            token_tags.append(self.doc_tokens_w_tags[index])
+        for tag in token_tags:
+            if tag == "title":
+                score += 8
+            elif tag == "h1":
+                score += 7
+            elif tag == "h2":
+                score += 6
+            elif tag == "h3":
+                score += 5
+            elif tag == "h4":
+                score += 4
+            elif tag == "h5":
+                score += 3
+            elif tag == "h6":
+                score += 2
+            elif tag == "b":
+                score += 1.5
+            else:
+                score += 1
+        return score / len(token_tags)
+        

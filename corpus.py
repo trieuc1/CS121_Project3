@@ -19,6 +19,19 @@ class Corpus:
     def __init__(self):
         self.tokens = dict()  # {"token": token obj}
         self.documents = []
+    
+    def get_formatted_corpus(self) -> dict:
+        """
+        returns a dictionary where the key is the token string and
+        its value is a list of formatted postings
+
+        {"token": [formatted postings]}
+        """
+        formatted_tokens = dict()
+        for k, v in self.tokens.items():
+            idf = self.get_idf(k)
+            formatted_tokens[k] = v.formatted_postings(idf)
+        return formatted_tokens
 
 
     def is_in_corpus(self, token: str) -> bool:
@@ -58,7 +71,8 @@ class Corpus:
                 token_id = self.get_token(token).get_id()
                 frequency = doc.get_token_frequency(token)
                 indices = doc.get_token_indices(token)
-                posting = Posting(token_id, doc.get_doc_id, frequency, indices)
+                metatag_score = doc.get_metatag_score(token)
+                posting = Posting(token_id, doc.get_doc_id, frequency, indices, metatag_score)
                 add_posting = self.get_token(token).add_posting(posting)
                 if not add_posting:
                     raise PostingError("ERROR: unable to add posting to token")
