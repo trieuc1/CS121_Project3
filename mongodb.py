@@ -70,6 +70,17 @@ class DataSave:
         query_result = clientCollection.delete_many({})
         client.close()
         print(f"[MongoDB Manager] Deleted a total of {query_result.deleted_count} documents.")
+    
+    def get_documents(self, string_input):
+        """
+        Gets all of the documents given a string input
+        """
+        BASE_QUERY = {string_input: {"$exists": True}} 
+        client, clientCollection = self.__get_collection()
+        query_result = clientCollection.find_one(BASE_QUERY)
+        client.close()
+        print(f"[MongoDB Manager] Found Document: {query_result}")
+        return query_result
 
 
 if __name__ == "__main__":
@@ -80,3 +91,14 @@ if __name__ == "__main__":
     res = CurData.retreive_all_data()
     print(res)
     CurData.remove_collection()
+    #-------------------TESTING------------------#
+    print("-----------------------TESTING-------------------------")
+    CurData.save_data({"Hello": [(1, 6, [1, 9, 27], 8.99, 10)]})
+    CurData.save_data({"Word": [(1, 6, [1, 9, 27], 8.99, 10)]})
+    CurData.save_data({"exampleToken": [(1, 6, [1, 9, 27], 8.99, 10)]})
+    CurData.save_data({"tokenStorage": [(1, 6, [1, 9, 27], 8.99, 10)]})
+    resultFound = CurData.get_documents("Hello")
+    print(resultFound)
+    res = CurData.retreive_all_data()
+    CurData.remove_collection()
+
