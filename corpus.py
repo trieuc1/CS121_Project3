@@ -2,6 +2,11 @@ from document import Document
 from posting import Posting
 from math import log
 import json
+import mongodb
+
+DATASAVE = "mongodb+srv://proj3Cluster:idepZy2mBvChOvan@projectcluster.5idbqzt.mongodb.net/"
+DATABASE = "Database"
+COLLECTION = "Collection"
 
 class TokenDoesNotExist(Exception):
     def __init__(self, message):
@@ -121,7 +126,18 @@ class Corpus:
 
     def dump(self):
         """
-        Dumps contents into a JSON
+        Dumps contents into a JSON/MongoDB
         """
+        dict_list = []
+        mongodbInstance = mongodb.DataSave(DATASAVE, DATABASE, COLLECTION)
+        for data in self.get_formatted_corpus().items():
+            dict_list.append({data[0]: data[1]})
+        
+        mongodbInstance.insert_all(dict_list)
+
         with open("corpus.json", "a") as out_file:
             json.dump(self.get_formatted_corpus(), out_file, indent=6)
+    
+    def clear_index(self):
+        mongodbInstance = mongodb.DataSave(DATASAVE, DATABASE, COLLECTION)
+        mongodbInstance.remove_collection()

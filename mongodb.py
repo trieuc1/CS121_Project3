@@ -12,7 +12,7 @@ class DataSave:
         self.client = client
         self.database = database
         self.collection = collection
-        print(f"[MongoDB Manager] Setup")
+        print(f"[MongoDB Manager] Loaded")
     
     def __get_collection(self):
         """
@@ -29,8 +29,8 @@ class DataSave:
         Use .json format to save data
         """
         client, clientCollection = self.__get_collection()
-        result = clientCollection.insert_one(query_save)
-        print(f"[MongoDB Manager] Saved Data: {query_save} | {result}")
+        clientCollection.insert_one(query_save)
+        print(f"[MongoDB Manager] Saved Data!")
         client.close()
     
     def retreive_all_data(self):
@@ -71,7 +71,7 @@ class DataSave:
         client.close()
         print(f"[MongoDB Manager] Deleted a total of {query_result.deleted_count} documents.")
     
-    def get_documents(self, string_input):
+    def get_query(self, string_input):
         """
         Gets all of the documents given a string input
         """
@@ -79,7 +79,18 @@ class DataSave:
         client, clientCollection = self.__get_collection()
         query_result = clientCollection.find_one(BASE_QUERY)
         client.close()
-        print(f"[MongoDB Manager] Found Document: {query_result}")
+        print(f"[MongoDB Manager] Found Document!")
+        return query_result
+
+    def insert_all(self, list_input:list[dict]):
+        """
+        Given a list of documents or dictionaries in this case, it will upload all of the
+        Dictionaries into MongoDB at once rather than one at a time.
+        """
+        client, clientCollection = self.__get_collection()
+        query_result = clientCollection.insert_many(list_input)
+        print(f"[MongoDB Manager] Successfully uploaded all of the documents!")
+        client.close()
         return query_result
 
 
