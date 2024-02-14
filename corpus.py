@@ -1,6 +1,3 @@
-import os
-import pickle
-from tokenhandler import Token
 from document import Document
 from posting import Posting
 from math import log
@@ -93,7 +90,7 @@ class Corpus:
             if not add_posting:
                 raise PostingError("ERROR: unable to add posting to token")
 
-    def get_token(self, token: str) -> Token:
+    def get_token(self, token: str):
         """
         this function returns the token obj based on the token string
         """

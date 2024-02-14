@@ -61,7 +61,7 @@ def convert_tag(tag: str) -> str:
     else:
         return None
 
-def get_text(book_id: str):
+def get_text(book_id: str) -> str:
     """
     returns all text
     """
@@ -71,7 +71,7 @@ def get_text(book_id: str):
         html = BeautifulSoup(content, 'lxml')
         return html.get_text()
 
-def get_tags(book_id: str):
+def get_tags(book_id: str) -> list[tuple]:
     """
     returns all words associated with tags. May contain duplicates
     """
@@ -85,9 +85,10 @@ def get_tags(book_id: str):
                 result.append((word.get_text(), tag))
     return result
 
-def lemmatize_text(html: str):
+def lemmatize_text(html: str) ->list[str]:
     """
     Lemmatize text and give type of word
+    example output: ["yo, "bro"]
     """
     if html:
         result = []
@@ -105,7 +106,7 @@ def lemmatize_text(html: str):
         return []
 
 
-def tokenize(corpus: Corpus, book_id: str, lemmatized: list[str], tags: list[tuple], n: int) -> list:
+def tokenize(corpus: Corpus, book_id: str, lemmatized: list[str], tags: list[tuple], n: int):
     """
     Creates a document object with page info
     """
