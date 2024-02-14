@@ -36,7 +36,7 @@ class Token:
         return self.token_string
 
 
-    def get_postings(self) -> list:
+    def get_postings(self) -> list[Posting]:
         """
         returns the list of Posting objects
         """

@@ -34,12 +34,12 @@ class Corpus:
         if len (self.postings) == 0:
             self.create_all_doc_postings()
         formatted_tokens = dict()
-        for k, postings in self.postings.items():
-            idf = self.get_idf(k)
+        for token_str, token_obj in self.tokens.items():
+            idf = self.get_idf(token_str)
             temp = []
-            for v in postings:
-                temp.append(v.get_formatted_posting(idf))
-            formatted_tokens[k] = " | ".join(temp)
+            for post in token_obj.get_postings():
+                temp.append(post.get_formatted_posting(idf))
+            formatted_tokens[token_str] = " | ".join(temp)
         return formatted_tokens
 
 
@@ -49,6 +49,7 @@ class Corpus:
         """
         return self.tokens.get(token, None) is not None
 
+
     def add_document(self, doc: Document):
         """
         adds the document obj to the document list and all of its
@@ -57,33 +58,26 @@ class Corpus:
         """
         for x in doc.get_unique_strings():
             if x not in self.tokens:
-                self.tokens[x] = [doc]
-            else:
-                self.tokens[x].append(doc)
+                self.tokens[x] = Token(x)
         self.documents.append(doc)
 
 
     def create_all_doc_postings(self):
         """
-        This function adds all docs' postings to its corresponding token
+        This function creates and adds all docs' postings to its
+        corresponding token
         
         Raises PostingError if done unsuccessfully
         """
         for doc in self.documents:
-            for token in doc.get_unique_strings():
-                token_id = token
-                frequency = doc.get_token_frequency(token)
-                indices = doc.get_token_indices(token)
-                metatag_score = doc.get_metatag_score(token)
-                posting = Posting(token_id, doc.get_doc_id(), frequency, indices, metatag_score)
-                if token not in self.postings:
-                    self.postings[token] = []
-                self.postings[token].append(posting)
-                if not posting:
-                    raise PostingError("ERROR: unable to add posting to token")
+            self.create_posting(doc)
+
 
     def create_posting(self, doc: Document):
-        for token in self.tokens:
+        """
+        creates all postings based off a Document obj content
+        """
+        for token in doc.get_unique_strings():
             token_id = self.get_token(token).get_id()
             frequency = doc.get_token_frequency(token)
             indices = doc.get_token_indices(token)

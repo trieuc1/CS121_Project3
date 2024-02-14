@@ -1,16 +1,17 @@
 class Document:
     doc_id = 0
 
-    def __init__(self, bookkeeper_id: int, doc_tokens: list[str], tags: list[tuple]):
+    def __init__(self, bookkeeper_id: int, doc_tokens: list[str], tags: list[tuple(str, list)]):
         """
-        Constructo for a document
-        self.tags example: [("yo", "h1"), ("yo", "h1"), ("bro", "title")]
-        self.doc_tokens: [("yo", "n"), ("run", "v")]
+        Constructor for a document
+        self.tags example: [("yo hello", ["h1", "h2"])] , where n = 2
+        self.doc_tokens: ["yo hello", "hello there"]
         """
         Document.doc_id += 1
         self.doc_id = Document.doc_id
         self.tags = tags
         self.doc_tokens = doc_tokens
+        # set of tuples, where the tuples are tokens ("hello", "there")
         self.unique_strings = set()
         self.bookkeeper_id = bookkeeper_id
 
@@ -66,7 +67,7 @@ class Document:
         return self.doc_tokens.count(token)
 
 
-    def get_token_indices(self, token:str) -> list:
+    def get_token_indices(self, token: str) -> list:
         """
         this function returns a list of indices of where the token
         occurred
@@ -83,13 +84,15 @@ class Document:
         """
         returns a score of importance for each occurance of 
         the token based on the meta tag associated with it
+
+        self.tags example: [("yo hello", ["h1", "h2"])] , where n = 2
         """
         indices = self.get_token_indices(token)
         token_tags = []
         score = 0
-        for index in range(len(self.tags)):
-            if self.tags[index][0] == token:
-                token_tags.append(self.tags[index][1])
+        for tup in self.tags:
+            if tup[0] == token:
+                token_tags += tup[1]
         for tag in token_tags:
             if tag == "title":
                 score += 8
