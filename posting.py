@@ -26,7 +26,7 @@ class Posting:
         """
         returns the formmatted posting
         """
-        return f'{self.doc_id}:{self.frequency}:{self.indices}:{self.get_tf_idf(idf)}:{self.metatag_score}'
+        return f'{self.get_doc_id()}:{self.frequency}:{self.indices}:{self.get_tf_idf(idf)}:{self.metatag_score}'
 
 
     def get_doc_id(self) -> int:

@@ -1,7 +1,7 @@
 class Document:
     doc_id = 0
 
-    def __init__(self, bookkeeper_id: int, doc_tokens: list):
+    def __init__(self, bookkeeper_id: int, doc_tokens: list[tuple]):
         Document.doc_id += 1
         self.doc_id = Document.doc_id
         # [(token, tag)]
@@ -48,6 +48,7 @@ class Document:
         """
         returns all the unique strings/tokens in a doc
         """
+        # index 0 to get word
         for x in self.doc_tokens:
             if x not in self.unique_strings:
                 self.unique_strings.add(x)
@@ -103,5 +104,7 @@ class Document:
                 score += 1.5
             else:
                 score += 1
+        if len(token_tags) == 0:
+            return 0
         return score / len(token_tags)
         

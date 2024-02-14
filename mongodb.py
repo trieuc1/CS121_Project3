@@ -86,7 +86,7 @@ class DataSave:
 if __name__ == "__main__":
     #examples of what you can do. Might have to whitelist IP Address for it to work, essentially you can store your string client, put database name and collection and it
     #should work
-    CurData = DataSave("mongodb+srv://proj3Cluster:idepZy2mBvChOvan@projectcluster.5idbqzt.mongodb.net/", "Database", "Collection")
+    CurData = DataSave("mongodb+srv://cs121:cs121@cs121rpoject3m1.1wqbe90.mongodb.net/?retryWrites=true&w=majority", "Database", "Collection")
     CurData.save_data({'docID': 1, 'terms': ["hello", "world"]})
     res = CurData.retreive_all_data()
     print(res)
