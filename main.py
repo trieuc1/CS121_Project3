@@ -1,9 +1,6 @@
 import atexit
-import os
-import sys
-from tokenizer import initialize_corpus 
+from tokenizer import initialize_corpus
 from corpus import Corpus
-import tokenizer
 
 if __name__ == "__main__":
     # Instantiates frontier and loads the last state if exists
