@@ -5,6 +5,7 @@ from document import Document
 from posting import Posting
 from math import log
 import json
+import mongodb
 
 class TokenDoesNotExist(Exception):
     def __init__(self, message):
@@ -130,5 +131,10 @@ class Corpus:
         """
         Dumps contents into a JSON
         """
+        mongodbInstance = mongodb.DataSave("mongodb+srv://proj3Cluster:idepZy2mBvChOvan@projectcluster.5idbqzt.mongodb.net/", "Database", "Collection")
+        for data in self.get_formatted_corpus().items():
+            mongodbInstance.save_data({data[0]: data[1]})
+
         with open("corpus.json", "a") as out_file:
             json.dump(self.get_formatted_corpus(), out_file, indent=6)
+        
