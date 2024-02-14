@@ -2,7 +2,7 @@ import atexit
 import os
 import sys
 from tokenizer import initialize_corpus 
-from corpus import CORPUS_DIR_NAME, Corpus
+from corpus import Corpus
 import tokenizer
 
 if __name__ == "__main__":
