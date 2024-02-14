@@ -18,7 +18,7 @@ STOP_WORDS = set(list(stopwords.words('english')) + list(spacy.load('en_core_web
 NUMBER_OF_GRAMS = 1
 WEBPAGES_PATH = "WEBPAGES_RAW"
 LEMMATIZER = WordNetLemmatizer()
-TAGS = ["title", "h1", "h2", "h3", "h4", "h5", "h6", "b"]
+# TAGS = ["title", "h1", "h2", "h3", "h4", "h5", "h6", "b"]
 
 def initialize_corpus(corpus: Corpus) -> Corpus:
     """
@@ -61,7 +61,8 @@ def convert_tag(tag: str) -> str:
     else:
         return None
 
-def get_text(book_id: str):
+
+def get_text(book_id: str) -> str:
     """
     returns all html text
     """
@@ -71,7 +72,8 @@ def get_text(book_id: str):
         html = BeautifulSoup(content, 'lxml')
         return html.get_text()
 
-def get_tags(book_id: str):
+
+def get_tags(book_id: str) -> list[tuple]:
     """
     returns all words associated with tags. May contain duplicates
     """
@@ -88,9 +90,11 @@ def get_tags(book_id: str):
                     result.append((word, element.name))
     return result
 
-def lemmatize_text(html: str):
+
+def lemmatize_text(html: str) ->list[str]:
     """
     Lemmatize text and give type of word
+    example output: ["yo, "bro"]
     """
     if html:
         result = []
@@ -108,13 +112,13 @@ def lemmatize_text(html: str):
         return []
 
 
-def tokenize(corpus: Corpus, book_id: str, lemmatized: list[str], tags: list[tuple], n: int) -> list:
+def tokenize(corpus: Corpus, book_id: str, lemmatized: list[str], tags: list[tuple], n: int):
     """
     Creates a document object with page info
     """
     n_grams = list(zip(*[lemmatized[i:] for i in range(n)]))
     # if we want the words to be combined instead of separated into a tuple
-    n_grams = [' '.join(i) for i in n_grams]
+    n_grams = [' '.join(i.strip().lower()) for i in n_grams]
     n_tags = list(zip(*[tags[i:] for i in range(n)]))
     new_tags = []
     for tag in n_tags:
@@ -125,7 +129,7 @@ def tokenize(corpus: Corpus, book_id: str, lemmatized: list[str], tags: list[tup
             tag = x[1]
             token_tags.append(tag)
             token_string += word + ' '
-        new_tags.append((token_string.strip(), token_tags))
+        new_tags.append((token_string.strip().lower(), token_tags))
     doc = Document(book_id, n_grams, new_tags)
     corpus.add_document(doc)
 

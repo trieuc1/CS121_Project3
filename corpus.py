@@ -1,10 +1,13 @@
-import os
-import pickle
-from tokenhandler import Token
 from document import Document
 from posting import Posting
+from tokenhandler import Token
 from math import log
 import json
+import mongodb
+
+DATASAVE = "mongodb+srv://proj3Cluster:idepZy2mBvChOvan@projectcluster.5idbqzt.mongodb.net/"
+DATABASE = "Database"
+COLLECTION = "Collection"
 
 class TokenDoesNotExist(Exception):
     def __init__(self, message):
@@ -87,7 +90,7 @@ class Corpus:
             if not add_posting:
                 raise PostingError("ERROR: unable to add posting to token")
 
-    def get_token(self, token: str) -> Token:
+    def get_token(self, token: str):
         """
         this function returns the token obj based on the token string
         """
@@ -96,15 +99,17 @@ class Corpus:
             raise TokenDoesNotExist("ERROR: The searched token doesn't exist.")
         return returned_token
 
+
     def get_all_docs(self) -> list[Document]:
         return self.documents
+
 
     def get_doc_frequency(self, token: str) -> int:
         """
         this function returns the frequency of a token in a document
         """
         token_obj = self.tokens.get(token)
-        return len(token_obj)
+        return len(token_obj.get_postings())
 
 
     def get_idf(self, token: str) -> float:
@@ -118,7 +123,18 @@ class Corpus:
 
     def dump(self):
         """
-        Dumps contents into a JSON
+        Dumps contents into a JSON/MongoDB
         """
+        dict_list = []
+        mongodbInstance = mongodb.DataSave(DATASAVE, DATABASE, COLLECTION)
+        for data in self.get_formatted_corpus().items():
+            dict_list.append({data[0]: data[1]})
+        
+        mongodbInstance.insert_all(dict_list)
+
         with open("corpus.json", "a") as out_file:
             json.dump(self.get_formatted_corpus(), out_file, indent=6)
+    
+    def clear_index(self):
+        mongodbInstance = mongodb.DataSave(DATASAVE, DATABASE, COLLECTION)
+        mongodbInstance.remove_collection()
