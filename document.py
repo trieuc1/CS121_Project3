@@ -1,12 +1,12 @@
 class Document:
     doc_id = 0
 
-    def __init__(self, bookkeeper_id: int, doc_tokens: list[tuple]):
+    def __init__(self, bookkeeper_id: int, doc_tokens: list[str], tags: list[tuple]):
         Document.doc_id += 1
         self.doc_id = Document.doc_id
         # [(token, tag)]
-        self.doc_tokens_w_tags = doc_tokens
-        self.doc_tokens = [token[0] for token in doc_tokens]
+        self.tags = tags
+        self.doc_tokens = doc_tokens
         self.unique_strings = set()
         self.bookkeeper_id = bookkeeper_id
 
@@ -83,8 +83,9 @@ class Document:
         indices = self.get_token_indices(token)
         token_tags = []
         score = 0
-        for index in indices:
-            token_tags.append(self.doc_tokens_w_tags[index])
+        for index in range(len(self.tags)):
+            if self.tags[index][0] == token:
+                token_tags.append(self.tags[index][1])
         for tag in token_tags:
             if tag == "title":
                 score += 8
@@ -102,9 +103,6 @@ class Document:
                 score += 2
             elif tag == "b":
                 score += 1.5
-            else:
-                score += 1
-        if len(token_tags) == 0:
-            return 0
-        return score / len(token_tags)
+        score += len(indices) - len(token_tags)
+        return score / len(indices)
         

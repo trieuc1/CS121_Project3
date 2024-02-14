@@ -18,17 +18,16 @@ STOP_WORDS = set(list(stopwords.words('english')) + list(spacy.load('en_core_web
 NUMBER_OF_GRAMS = 1
 WEBPAGES_PATH = "WEBPAGES_RAW"
 LEMMATIZER = WordNetLemmatizer()
+TAGS = ["h1", "h2", "h3", "h4", "h5", "h6", "b"]
+
 
 def initialize_corpus(corpus: Corpus) -> Corpus:
     bookkeeper_ids = list(get_bookkeeper().keys())
     total = len(bookkeeper_ids)
     count = 0
     for book_id in bookkeeper_ids:
-        start = time.time()
-        word_list = get_formatted_text(book_id)
-        tokenize(corpus, book_id, word_list, NUMBER_OF_GRAMS)
-        end = time.time()
-        print(f"{(count/total)*100:.2f}% \t-- {book_id} \t -- {end-start:.2f}s", end="\n")
+        tokenize(corpus, book_id, lemmatize_text(get_text(book_id)), get_tags(book_id), NUMBER_OF_GRAMS)
+        print(f"{(count/total)*100:.2f}% \t-- {book_id}", end="\r")
         count += 1
     corpus.create_all_doc_postings()
     return corpus
@@ -53,48 +52,53 @@ def convert_tag(tag: str) -> str:
     else:
         return None
 
-def get_word_tags(book_id: str):
+def get_text(book_id: str):
     """
-    returns list of tuple of words and their associated tags from html
-    [(word, meta_tag)]
+    returns all text
     """
     path_string = Path(WEBPAGES_PATH) / book_id
     with open(path_string, 'r', encoding='utf-8') as file:
         content = file.read()
-        html_w_tags = BeautifulSoup(content, 'html.parser')
-        for element in html_w_tags.find_all():
-            if hasattr(element, 'text'):
-                text = element.text.strip()
-                words = text.split()
-                for word in words:
-                    yield ((word.lower(), element.name))
+        html = BeautifulSoup(content, 'lxml')
+        return html.get_text()
 
+def get_tags(book_id: str):
+    """
+    returns all words associated with tags. May contain duplicates
+    """
+    path_string = Path(WEBPAGES_PATH) / book_id
+    result = []
+    with open(path_string, 'r', encoding='utf-8') as file:
+        content = file.read()
+        html = BeautifulSoup(content, 'lxml')
+        for tag in TAGS:
+            for word in html.find_all(tag):
+                result.append((word.get_text(), tag))
+    return result
 
-def lemmatize_text(tags: tuple):
-    word = tags[0]
-    element = tags[1]
-    if word:
-        pos_tag_list = nltk.pos_tag(word_tokenize(word))
+def lemmatize_text(html: str):
+    """
+    Lemmatize text and give type of word
+    """
+    if html:
+        result = []
+        pos_tag_list = nltk.pos_tag(word_tokenize(html))
         for pos_tag in pos_tag_list: 
             word = pos_tag[0]
             word_tag = convert_tag(pos_tag[1]) #because its a different tag than lemmetize WordNet
             if word not in STOP_WORDS:        
                 if word_tag:
-                    yield (LEMMATIZER.lemmatize(word, pos=word_tag), element)
+                    result.append(LEMMATIZER.lemmatize(word, pos=word_tag))
                 else:
-                    yield (LEMMATIZER.lemmatize(word), element)
-
-def get_formatted_text(book_id: str):
-    result = []
-    for i in get_word_tags(book_id):
-        for j in lemmatize_text(i):
-            result.append(j)
-    return result
+                    result.append(LEMMATIZER.lemmatize(word))
+        return result
+    else:
+        return []
 
 
-def tokenize(corpus: Corpus, book_id: str, lemmatized: list, n: int) -> list:
+def tokenize(corpus: Corpus, book_id: str, lemmatized: list[str], tags: list[tuple], n: int) -> list:
     n_grams = list([lemmatized[0] for i in lemmatized])
-    doc = Document(book_id, n_grams)
+    doc = Document(book_id, n_grams, tags)
     corpus.add_document(doc)
 
 
