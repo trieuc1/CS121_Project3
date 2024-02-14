@@ -20,8 +20,17 @@ WEBPAGES_PATH = "WEBPAGES_RAW"
 LEMMATIZER = WordNetLemmatizer()
 TAGS = ["h1", "h2", "h3", "h4", "h5", "h6", "b"]
 
-
 def initialize_corpus(corpus: Corpus) -> Corpus:
+    """
+    Takes a corpus and propogates it with an index.
+    Get folder location from bookkeeper, loops through each one to:
+      1. read html
+      2. lemmatize
+      Seperately:
+      1. gets tags
+      Then: tokenizes it.
+    After finishing, creates the posting
+    """
     bookkeeper_ids = list(get_bookkeeper().keys())
     total = len(bookkeeper_ids)
     count = 0
@@ -97,6 +106,9 @@ def lemmatize_text(html: str):
 
 
 def tokenize(corpus: Corpus, book_id: str, lemmatized: list[str], tags: list[tuple], n: int) -> list:
+    """
+    Creates a document object with page info
+    """
     n_grams = list([lemmatized[0] for i in lemmatized])
     doc = Document(book_id, n_grams, tags)
     corpus.add_document(doc)

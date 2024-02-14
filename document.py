@@ -2,9 +2,13 @@ class Document:
     doc_id = 0
 
     def __init__(self, bookkeeper_id: int, doc_tokens: list[str], tags: list[tuple]):
+        """
+        Constructo for a document
+        self.tags example: [("yo", "h1"), ("yo", "h1"), ("bro", "title")]
+        self.doc_tokens: [("yo", "n"), ("run", "v")]
+        """
         Document.doc_id += 1
         self.doc_id = Document.doc_id
-        # [(token, tag)]
         self.tags = tags
         self.doc_tokens = doc_tokens
         self.unique_strings = set()

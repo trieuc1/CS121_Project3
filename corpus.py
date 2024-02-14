@@ -18,14 +18,10 @@ class PostingError(Exception):
         super().__init__(self.message)
 
 
-CORPUS_DIR_NAME = "corpus_state"
-TOKENS_FILE_NAME = os.path.join(".", CORPUS_DIR_NAME, "tokens.pkl")
-DOC_FILE_NAME = os.path.join(".", CORPUS_DIR_NAME, "documents.pkl")
-
 class Corpus:
     def __init__(self):
         self.tokens = dict()  # {"token": token obj}
-        self.postings = dict()
+        self.postings = dict() # {"word": [posting obj, posting obj, ...]}
         self.documents = []
     
     def get_formatted_corpus(self) -> dict:
