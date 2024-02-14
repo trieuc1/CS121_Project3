@@ -83,7 +83,7 @@ def get_tags(book_id: str) -> list[tuple]:
         content = file.read()
         html = BeautifulSoup(content, 'html.parser')
         for element in html.find_all():
-            if hasattr(word, 'text'):
+            if hasattr(element, 'text'):
                 text = element.text.strip()
                 words = text.split()
                 for word in words:
@@ -118,7 +118,7 @@ def tokenize(corpus: Corpus, book_id: str, lemmatized: list[str], tags: list[tup
     """
     n_grams = list(zip(*[lemmatized[i:] for i in range(n)]))
     # if we want the words to be combined instead of separated into a tuple
-    n_grams = [' '.join(i.strip().lower()) for i in n_grams]
+    n_grams = [(' '.join(i)).strip().lower() for i in n_grams]
     n_tags = list(zip(*[tags[i:] for i in range(n)]))
     new_tags = []
     for tag in n_tags:

@@ -81,7 +81,7 @@ class Corpus:
         creates all postings based off a Document obj content
         """
         for token in doc.get_unique_strings():
-            token_id = self.get_token(token).get_id()
+            token_id = self.get_token(token).get_token_id()
             frequency = doc.get_token_frequency(token)
             indices = doc.get_token_indices(token)
             metatag_score = doc.get_metatag_score(token)
