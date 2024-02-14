@@ -46,13 +46,18 @@ def search_index(term_input: str):
     Loads the specific queried Index and prints the links out
     """
     mongodbInstance = mongodb.DataSave(DATASAVE, DATABASE, COLLECTION)
-    query_result = mongodbInstance.get_query(term_input)[term_input]
+
+    try:
+        query_result = mongodbInstance.get_query(term_input)[term_input]
+    except TypeError:
+        print("Unable to Search for the Query. Does not Exist.")
+        return
+
+    print(f"Searching for {term_input}")
     loaded_bookmarks = LoadBookMark()
-    string_term = ""
     list_of_document_id = []
     res = query_result.split(" | ")
     for i in res:
-        string_term += i[:i.find(":")] + " "
         list_of_document_id.append(i[:i.find(":")])
     for id in list_of_document_id:
         print(f"{loaded_bookmarks.find_query(id)} | ({id})")
