@@ -79,28 +79,10 @@ class Document:
         self.tags example: [("yo hello", ["h1", "h2"])] , where n = 2
         """
         indices = self.get_token_indices(token)
-        token_tags = []
         score = 0
         for tup in self.tags:
             if tup[0] == token:
-                token_tags += tup[1]
-        for tag in token_tags:
-            if tag == "title":
-                score += 8
-            elif tag == "h1":
-                score += 7
-            elif tag == "h2":
-                score += 6
-            elif tag == "h3":
-                score += 5
-            elif tag == "h4":
-                score += 4
-            elif tag == "h5":
-                score += 3
-            elif tag == "h6":
                 score += 2
-            elif tag == "b":
-                score += 1.5
-        score += len(indices) - len(token_tags)
+        score += len(indices) - (score / 2)
         return score / len(indices)
         
