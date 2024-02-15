@@ -73,4 +73,4 @@ class Posting:
 
         the higher the score, the more relevant it is
         """
-        return log( 1 + self.frequency) * idf
+        return (1+log(self.frequency)) * idf
