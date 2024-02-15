@@ -18,7 +18,7 @@ STOP_WORDS = set(list(stopwords.words('english')) + list(spacy.load('en_core_web
 NUMBER_OF_GRAMS = 1
 WEBPAGES_PATH = "WEBPAGES_RAW"
 LEMMATIZER = WordNetLemmatizer()
-# TAGS = ["title", "h1", "h2", "h3", "h4", "h5", "h6", "b"]
+TAGS = ["title", "h1", "h2", "h3", "h4", "h5", "h6", "b"]
 
 def initialize_corpus(corpus: Corpus) -> Corpus:
     """
@@ -79,16 +79,17 @@ def get_tags(book_id: str) -> list[tuple]:
     """
     path_string = Path(WEBPAGES_PATH) / book_id
     result = []
+    lemmatize_result = []
     with open(path_string, 'r', encoding='utf-8') as file:
         content = file.read()
-        html = BeautifulSoup(content, 'html.parser')
-        for element in html.find_all():
-            if hasattr(element, 'text'):
-                text = element.text.strip()
-                words = text.split()
-                for word in words:
-                    result.append((word, element.name))
-    return result
+        html = BeautifulSoup(content, 'lxml')
+        for tag in TAGS:
+            for word in html.find_all(tag):
+                result.append((word.get_text(), tag))
+    for word in result:
+        for lem_word in lemmatize_text(word[0]):
+            lemmatize_result.append((lem_word, word[1]))    
+    return lemmatize_result
 
 
 def lemmatize_text(html: str) ->list[str]:

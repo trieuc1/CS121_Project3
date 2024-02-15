@@ -85,7 +85,7 @@ class Corpus:
             frequency = doc.get_token_frequency(token)
             indices = doc.get_token_indices(token)
             metatag_score = doc.get_metatag_score(token)
-            posting = Posting(token_id, doc.get_doc_id, frequency, indices, metatag_score)
+            posting = Posting(token_id, doc.get_doc_id(), frequency, indices, metatag_score)
             add_posting = self.get_token(token).add_posting(posting)
             if not add_posting:
                 raise PostingError("ERROR: unable to add posting to token")

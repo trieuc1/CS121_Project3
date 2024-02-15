@@ -1,5 +1,5 @@
 class Document:
-    def __init__(self, bookkeeper_id: int, doc_tokens: list[str], tags: list[tuple()]):
+    def __init__(self, bookkeeper_id: int, doc_tokens: list[str], tags: list[tuple]):
         """
         Constructor for a document
         self.tags example: [("yo hello", ["h1", "h2"])] , where n = 2
