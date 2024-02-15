@@ -33,12 +33,11 @@ def initialize_corpus(corpus: Corpus) -> Corpus:
     """
     bookkeeper_ids = list(get_bookkeeper().keys())
     total = len(bookkeeper_ids)
-    count = 0
+    count = 1
     for book_id in bookkeeper_ids:
         tokenize(corpus, book_id, lemmatize_text(get_text(book_id)), get_tags(book_id), NUMBER_OF_GRAMS)
         print(f"{(count/total)*100:.2f}% \t-- total: {total} \t --completed: {count}     ", end="\r")
         count += 1
-    corpus.create_all_doc_postings()
     return corpus
 
 def get_bookkeeper() -> dict:

@@ -72,9 +72,14 @@ class Corpus:
         
         Raises PostingError if done unsuccessfully
         """
+        total = len(self.documents)
+        count = 1
+        print("Posting!")
         for doc in self.documents:
             self.create_posting(doc)
-
+            print(f"{(count/total)*100:.2f}% \t-- total: {total} \t --completed: {count}     ", end="\r")
+            count += 1
+        print()
 
     def create_posting(self, doc: Document):
         """
@@ -126,15 +131,14 @@ class Corpus:
         Dumps contents into a JSON/MongoDB
         """
         dict_list = []
+        formmated_corpus = self.get_formatted_corpus()
+        for data in formmated_corpus.items():
+            dict_list.append({data[0]: data[1]})        
+        with open("corpus.json", "a") as out_file:
+            json.dump(formmated_corpus, out_file, indent=6)
         mongodbInstance = mongodb.DataSave(DATASAVE, DATABASE, COLLECTION)
-        for data in self.get_formatted_corpus().items():
-            dict_list.append({data[0]: data[1]})
-        
         mongodbInstance.insert_all(dict_list)
 
-        with open("corpus.json", "a") as out_file:
-            json.dump(self.get_formatted_corpus(), out_file, indent=6)
-    
     def clear_index(self):
         mongodbInstance = mongodb.DataSave(DATASAVE, DATABASE, COLLECTION)
         mongodbInstance.remove_collection()

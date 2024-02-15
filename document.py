@@ -9,8 +9,22 @@ class Document:
         self.tags = tags
         self.doc_tokens = doc_tokens
         # set of tuples, where the tuples are tokens ("hello", "there")
-        self.unique_strings = set()
-
+        self.unique_strings = set(doc_tokens)
+        self.word_count = dict()
+        self.word_indices = dict()
+        self.generate_word_info()
+    
+    def generate_word_info(self):
+        """
+        Creates dictionary with frequency of word in doc
+        """
+        for word in self.unique_strings:
+            self.word_count[word] = 0
+            self.word_indices[word] = []
+        for index in range(len(self.doc_tokens)):
+            word = self.doc_tokens[index]
+            self.word_count[word] += 1
+            self.word_indices[word].append(index)
 
     def get_doc_id(self) -> int:
         """
@@ -44,10 +58,6 @@ class Document:
         """
         returns all the unique strings/tokens in a doc
         """
-        # index 0 to get word
-        for x in self.doc_tokens:
-            if x not in self.unique_strings:
-                self.unique_strings.add(x)
         return self.unique_strings
 
 
@@ -55,7 +65,7 @@ class Document:
         """
         returns the amount of times a token occurred in the doc
         """
-        return self.doc_tokens.count(token)
+        return self.word_count[token]
 
 
     def get_token_indices(self, token: str) -> list:
@@ -63,11 +73,7 @@ class Document:
         this function returns a list of indices of where the token
         occurred
         """
-        indices = []
-        for index in range(len(self.doc_tokens)):
-            if self.doc_tokens[index] == token:
-                indices.append(index)
-        return indices
+        return self.word_indices[token]
 
     
 
@@ -78,11 +84,11 @@ class Document:
 
         self.tags example: [("yo hello", ["h1", "h2"])] , where n = 2
         """
-        indices = self.get_token_indices(token)
+        indices = self.word_count[token]
         score = 0
         for tup in self.tags:
             if tup[0] == token:
                 score += 2
-        score += len(indices) - (score / 2)
-        return score / len(indices)
+        score += indices - (score / 2)
+        return score / indices
         

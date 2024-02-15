@@ -23,6 +23,7 @@ if __name__ == "__main__":
         atexit.register(corpus.dump)
         corpus = initialize_corpus(corpus)
         corpus.dump()
+        atexit.unregister(corpus.dump)
     elif user_input == "2":
         user_input = input("Enter Your Search Query: ")
         query.search_index(user_input)
