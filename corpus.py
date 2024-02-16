@@ -136,7 +136,7 @@ class Corpus:
         for data in formmated_corpus.items():
             dict_list.append({data[0]: data[1]})        
         with open("corpus.json", "w", encoding="utf-8") as out_file:
-            json.dump(formmated_corpus, out_file, indent=6)
+            json.dump(formmated_corpus, out_file, indent=6, ensure_ascii=False)
         mongodbInstance = mongodb.DataSave(DATASAVE, DATABASE, COLLECTION)
         mongodbInstance.insert_all(dict_list)
 
@@ -159,15 +159,15 @@ def insert_json(path="corpus.json"):
     try:
         total = len(corpus_dict)
         count = 0
-        # for key, value in corpus_dict.items():
-        #     print(f"Uploaded {total}")
-        #     dict_list.append({key: value})
-        #     if len(dict_list) == 1000:
-        #         mongodbInstance = mongodb.DataSave(DATASAVE, DATABASE, COLLECTION)
-        #         mongodbInstance.insert_all(dict_list)
-        #         count += 1000
-        #         dict_list.clear()
-        # mongodbInstance = mongodb.DataSave(DATASAVE, DATABASE, COLLECTION)
-        # mongodbInstance.insert_all(dict_list)
+        for key, value in corpus_dict.items():
+            dict_list.append({key: value})
+            if len(dict_list) == 10000:
+                print(f"Uploaded {count} / {total}")
+                mongodbInstance = mongodb.DataSave(DATASAVE, DATABASE, COLLECTION)
+                mongodbInstance.insert_all(dict_list)
+                count += 1000
+                dict_list.clear()
+        mongodbInstance = mongodb.DataSave(DATASAVE, DATABASE, COLLECTION)
+        mongodbInstance.insert_all(dict_list)
     except Exception as e:
         print(e)
