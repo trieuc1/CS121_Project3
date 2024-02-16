@@ -21,6 +21,9 @@ class LoadBookMark:
                 self.jsonResult = json.loads(bookkeeper_file.read())
     
     def find_query(self, id_input:str):
+        """
+        returns the link associated with the doc id
+        """
         return self.jsonResult[id_input]
 
 
@@ -76,16 +79,14 @@ def search_index(term_input: str):
 
     print(f"Searching for {term_input}...")
     loaded_bookmarks = LoadBookMark()
-    list_of_document_id = []
     res = query_result.split(" | ")
-    for i in res:
-        list_of_document_id.append(i[:i.find(":")])
+    list_of_document_id = [ i[:i.find(":")] for i in res]
     for id in list_of_document_id:
-        print(f"{loaded_bookmarks.find_query(id)} | ({id})")
+        print(f"{loaded_bookmarks.find_query(id)}")
 
 def all_terms():
     """
-    All terms stored in the database
+    prints out all terms stored in both databases
     """
     mongodbInstance = mongodb.DataSave(DATASAVE, DATABASE, COLLECTION)
     mongodbInstance_two = mongodb.DataSave(DATASAVE_TWO, DATABASE, COLLECTION)
