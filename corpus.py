@@ -7,6 +7,7 @@ import mongodb
 from pathlib import Path
 
 DATASAVE = "mongodb+srv://proj3Cluster:idepZy2mBvChOvan@projectcluster.5idbqzt.mongodb.net/"
+DATASAVE_TWO = "mongodb+srv://jasonhw3:EBl154EMmvjllXLL@cluster0.tgq8vgu.mongodb.net/?retryWrites=true&w=majority"
 DATABASE = "Database"
 COLLECTION = "Collection"
 
@@ -129,7 +130,7 @@ class Corpus:
 
     def dump(self):
         """
-        Dumps contents into a JSON/MongoDB
+        Dumps contents into a JSON
         """
         dict_list = []
         formmated_corpus = self.get_formatted_corpus()
@@ -137,12 +138,12 @@ class Corpus:
             dict_list.append({data[0]: data[1]})        
         with open("corpus.json", "w", encoding="utf-8") as out_file:
             json.dump(formmated_corpus, out_file, indent=6, ensure_ascii=False)
-        mongodbInstance = mongodb.DataSave(DATASAVE, DATABASE, COLLECTION)
-        mongodbInstance.insert_all(dict_list)
 
     def clear_index(self):
         mongodbInstance = mongodb.DataSave(DATASAVE, DATABASE, COLLECTION)
         mongodbInstance.remove_collection()
+        mongodbInstance_two = mongodb.DataSave(DATASAVE_TWO, DATABASE, COLLECTION)
+        mongodbInstance_two.remove_collection()
     
     
 def insert_json(path="corpus.json"):
@@ -156,18 +157,27 @@ def insert_json(path="corpus.json"):
     dict_list = []
     with open(path, encoding="utf-8") as in_file:
         corpus_dict = json.load(in_file)
-    try:
-        total = len(corpus_dict)
-        count = 0
-        for key, value in corpus_dict.items():
-            dict_list.append({key: value})
-            if len(dict_list) == 10000:
-                print(f"Uploaded {count} / {total}")
+    
+    total = len(corpus_dict)
+    count = 0
+    for key, value in corpus_dict.items():
+        dict_list.append({key: value})
+        if len(dict_list) == 35000:
+            print(f"{(count/total)*100:.2f}% \t-- total: {count} \t --completed: {total}     ", end="\r")
+            try:
                 mongodbInstance = mongodb.DataSave(DATASAVE, DATABASE, COLLECTION)
                 mongodbInstance.insert_all(dict_list)
-                count += 10000
-                dict_list.clear()
+            except Exception as e:
+                print("Full, moving onto the second database")
+                mongodbInstance = mongodb.DataSave(DATASAVE_TWO, DATABASE, COLLECTION)
+                mongodbInstance.insert_all(dict_list)
+
+            count += 35000
+            dict_list.clear()
+    try:
         mongodbInstance = mongodb.DataSave(DATASAVE, DATABASE, COLLECTION)
         mongodbInstance.insert_all(dict_list)
     except Exception as e:
-        print(e)
+        print("Full, moving onto the second database")
+        mongodbInstance = mongodb.DataSave(DATASAVE_TWO, DATABASE, COLLECTION)
+        mongodbInstance.insert_all(dict_list)
