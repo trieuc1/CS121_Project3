@@ -154,7 +154,7 @@ def insert_json(path="corpus.json"):
         return
     corpus_dict = {}
     dict_list = []
-    with open(path) as in_file:
+    with open(path, encoding="utf-8") as in_file:
         corpus_dict = json.load(in_file)
     try:
         total = len(corpus_dict)
