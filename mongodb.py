@@ -93,7 +93,6 @@ class DataSave:
         client.close()
         return query_result
 
-
 if __name__ == "__main__":
     #examples of what you can do. Might have to whitelist IP Address for it to work, essentially you can store your string client, put database name and collection and it
     #should work

@@ -1,7 +1,7 @@
 import atexit
 import os
 from tokenizer import initialize_corpus 
-from corpus import Corpus
+from corpus import Corpus, insert_json
 import tokenizer
 import query
 
@@ -16,14 +16,15 @@ if __name__ == "__main__":
     print("2) Get the Search Results from the given Index")
     print("3) To clear the index")
     print("4) To get all of the terms in the index")
-    user_input = input("Please type 1/2/3/4:")
+    print("5) To upload JSON file to the index")
+    user_input = input("Please type 1/2/3/4/5:")
 
     if user_input == "1":
         corpus = Corpus()
         atexit.register(corpus.dump)
         corpus = initialize_corpus(corpus)
-        corpus.dump()
         atexit.unregister(corpus.dump)
+        corpus.dump()
     elif user_input == "2":
         user_input = input("Enter Your Search Query: ")
         query.search_index(user_input)
@@ -33,4 +34,6 @@ if __name__ == "__main__":
         corpus.clear_index()
     elif user_input == "4":
         query.all_terms()
+    elif user_input == "5":
+        insert_json()
     

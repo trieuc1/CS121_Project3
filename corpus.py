@@ -4,6 +4,7 @@ from tokenhandler import Token
 from math import log
 import json
 import mongodb
+from pathlib import Path
 
 DATASAVE = "mongodb+srv://proj3Cluster:idepZy2mBvChOvan@projectcluster.5idbqzt.mongodb.net/"
 DATABASE = "Database"
@@ -74,7 +75,7 @@ class Corpus:
         """
         total = len(self.documents)
         count = 1
-        print("Posting!")
+        print("\nPosting!")
         for doc in self.documents:
             self.create_posting(doc)
             print(f"{(count/total)*100:.2f}% \t-- total: {total} \t --completed: {count}     ", end="\r")
@@ -134,7 +135,7 @@ class Corpus:
         formmated_corpus = self.get_formatted_corpus()
         for data in formmated_corpus.items():
             dict_list.append({data[0]: data[1]})        
-        with open("corpus.json", "a") as out_file:
+        with open("corpus.json", "w", encoding="utf-8") as out_file:
             json.dump(formmated_corpus, out_file, indent=6)
         mongodbInstance = mongodb.DataSave(DATASAVE, DATABASE, COLLECTION)
         mongodbInstance.insert_all(dict_list)
@@ -142,3 +143,31 @@ class Corpus:
     def clear_index(self):
         mongodbInstance = mongodb.DataSave(DATASAVE, DATABASE, COLLECTION)
         mongodbInstance.remove_collection()
+    
+    
+def insert_json(path="corpus.json"):
+    """
+    Uploads json to corpus
+    """
+    if (Path(path).is_file() == False):
+        print("Path isn't a file")
+        return
+    corpus_dict = {}
+    dict_list = []
+    with open(path) as in_file:
+        corpus_dict = json.load(in_file)
+    try:
+        total = len(corpus_dict)
+        count = 0
+        # for key, value in corpus_dict.items():
+        #     print(f"Uploaded {total}")
+        #     dict_list.append({key: value})
+        #     if len(dict_list) == 1000:
+        #         mongodbInstance = mongodb.DataSave(DATASAVE, DATABASE, COLLECTION)
+        #         mongodbInstance.insert_all(dict_list)
+        #         count += 1000
+        #         dict_list.clear()
+        # mongodbInstance = mongodb.DataSave(DATASAVE, DATABASE, COLLECTION)
+        # mongodbInstance.insert_all(dict_list)
+    except Exception as e:
+        print(e)

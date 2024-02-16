@@ -66,7 +66,7 @@ def get_text(book_id: str) -> str:
     returns all html text
     """
     path_string = Path(WEBPAGES_PATH) / book_id
-    with open(path_string, 'r', encoding='utf-8') as file:
+    with open(path_string, 'rb') as file:
         content = file.read()
         html = BeautifulSoup(content, 'lxml')
         return html.get_text()
@@ -79,7 +79,7 @@ def get_tags(book_id: str) -> list[tuple]:
     path_string = Path(WEBPAGES_PATH) / book_id
     result = []
     lemmatize_result = []
-    with open(path_string, 'r', encoding='utf-8') as file:
+    with open(path_string, 'rb') as file:
         content = file.read()
         html = BeautifulSoup(content, 'lxml')
         for tag in TAGS:
@@ -134,6 +134,3 @@ def tokenize(corpus: Corpus, book_id: str, lemmatized: list[str], tags: list[tup
     corpus.add_document(doc)
 
 
-# if __name__ == "__main__":
-    # corp = initialize_corpus()
-    # corp.dump()
