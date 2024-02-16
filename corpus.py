@@ -165,7 +165,7 @@ def insert_json(path="corpus.json"):
                 print(f"Uploaded {count} / {total}")
                 mongodbInstance = mongodb.DataSave(DATASAVE, DATABASE, COLLECTION)
                 mongodbInstance.insert_all(dict_list)
-                count += 1000
+                count += 10000
                 dict_list.clear()
         mongodbInstance = mongodb.DataSave(DATASAVE, DATABASE, COLLECTION)
         mongodbInstance.insert_all(dict_list)
