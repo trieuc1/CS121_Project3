@@ -81,8 +81,9 @@ def search_index(term_input: str):
     loaded_bookmarks = LoadBookMark()
     res = query_result.split(" | ")
     list_of_document_id = [ i[:i.find(":")] for i in res]
-    for id in list_of_document_id:
-        print(f"{loaded_bookmarks.find_query(id)}")
+    return [loaded_bookmarks.find_query(id) for id in list_of_document_id]
+    # for id in list_of_document_id:
+    #     print(f"{loaded_bookmarks.find_query(id)}")
 
 def all_terms():
     """

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICS Search Engine</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Figtree:200,300,400,500,600,700,800,900,1000&display=swap">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='search.css') }}">
+</head>
+<body>
+    <div class="main-container">
+        <div class="corner">
+            <div class="img-container-corner" onclick="window.location.href = '/'">
+                <img class="uci-img" src="{{ url_for('static', filename='uci_logo.png') }}" alt="UCI Logo">
+            </div>
+            <div class="title-corner">
+                ICS Search Engine
+            </div>
+        </div>
+        <div class="results-container">
+            <div class="total">
+                {{num_results}}
+            </div>
+            <ul class="results-list">
+                {% for url in results %}
+                    <li>{{ url }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
