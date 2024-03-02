@@ -15,7 +15,7 @@ def index():
 @app.route('/search', methods=['POST'])
 def process_form():
     search_input = request.form['search_input'].lower().strip()
-    results = query.search_index(search_input)
+    results = query.query(search_input)
     num_results = f'Total Number of Results: {len(results)}'
     return render_template('results.html', results=results, num_results=num_results)
 
@@ -43,8 +43,9 @@ if __name__ == "__main__":
     # elif user_input == "2":
     #     user_input = input("Enter Your Search Query: ").lower().strip()
 
-    #     results = query.search_index(user_input)
-    #     print(results)
+    #     results = query.query(user_input)
+    #     for link in results:
+    #         print(link)
     #     print("Finished.")
     # elif user_input == "3":
     #     corpus = Corpus()
