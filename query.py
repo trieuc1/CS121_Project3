@@ -146,6 +146,30 @@ def cosine(index: dict, inverted_index: dict, term_input: str) -> list[tuple]:
     sorted_scores = sorted(scores, key=lambda x: x[1], reverse=True)
     return sorted_scores
 
+def tf_idf_scoring(index: dict, term_input: str)-> list[tuple]:
+    """
+    Scores using the sum of tf.idf values, then normalized
+    """
+    # Get query vector
+    term_query = term_input.split()
+    # get tf, store in term_idf, to be replaced
+    # get sum tf-idf score for each doc
+    scores = []
+    tf_idf_list = np.empty(len(index))
+    for count, doc_id in enumerate(index.keys()):
+        total = 0
+        for term in term_query:
+            if term in index[doc_id]:
+                total += index[doc_id][term].idf
+        scores.append([doc_id, total])
+        tf_idf_list[count] = total
+    # normalize tf-idf
+    norm_factor = np.linalg.norm(tf_idf_list)
+    for i in range(len(scores)):
+        scores[i][1] = scores[i][1] / norm_factor
+    sorted_scores = sorted(scores, key=lambda x: x[1], reverse=True)
+    return sorted_scores
+
 def query(term_input: str) -> list[str]:
     loaded_bookmarks = LoadBookMark()
     term_set = set(term_input.split())
@@ -171,12 +195,15 @@ def query(term_input: str) -> list[str]:
                     index[doc_id].update({term: doc_stats})
                 else:
                     index[doc_id] = {term: doc_stats}
-    # sorted_doc_id is list of tuples, tuples formatted as (doc_id, score)
-    # i.e: ("01/01", 0.92)
+    # Initialize dictionary containing document and their score 
+    # this format to update after each rank system
     doc_score = {doc_id: 0 for doc_id in index}
-    sorted_doc_id = cosine(index, inverted_index, term_input)
-    for doc_id, score in sorted_doc_id:
-        doc_score[doc_id] += score
+    cosine_scores = cosine(index, inverted_index, term_input)
+    for doc_id, score in cosine_scores:
+        doc_score[doc_id] += score * 1
+    tf_idf_sum = tf_idf_scoring(index, term_input)
+    for doc_id, score in tf_idf_sum:
+        doc_score[doc_id] += score * 1
     ranked_urls = [loaded_bookmarks.find_query(k) for k, v in sorted(doc_score.items(), key=lambda item: item[1], reverse=True)]
     return ranked_urls
 
