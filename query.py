@@ -3,6 +3,8 @@ import json
 import mongodb
 from pathlib import Path
 import numpy as np
+import re
+from bs4 import BeautifulSoup
 
 DATASAVE = "mongodb+srv://proj3Cluster:idepZy2mBvChOvan@projectcluster.5idbqzt.mongodb.net/"
 DATASAVE_TWO = "mongodb+srv://jasonhw3:EBl154EMmvjllXLL@cluster0.tgq8vgu.mongodb.net/?retryWrites=true&w=majority"
@@ -205,7 +207,30 @@ def query(term_input: str) -> list[str]:
     for doc_id, score in tf_idf_sum:
         doc_score[doc_id] += score * 1
     ranked_urls = [loaded_bookmarks.find_query(k) for k, v in sorted(doc_score.items(), key=lambda item: item[1], reverse=True)]
-    return ranked_urls
+    ranked_doc_ids = [k[0] for k in sorted(doc_score.items(), key=lambda item: item[1], reverse=True)]
+    return ranked_urls, ranked_doc_ids
+
+def get_query_details(doc_id: str) -> dict:
+    folder = doc_id[:doc_id.find("/")]
+    file = doc_id[doc_id.find("/") + 1:]
+
+    with open(Path("WEBPAGES_RAW") / folder / file, encoding='utf-8') as f:
+        soup = BeautifulSoup(f.read(), 'html.parser')
+        title_tag = soup.find('title')
+        title = title_tag.text.strip() if title_tag else "Unknown Title"
+                    
+    return title
+
+
+def get_html_info(doc_id: str) -> str:
+    folder = doc_id[:doc_id.find("/")]
+    file = doc_id[doc_id.find("/") + 1:]
+
+    with open(Path("WEBPAGES_RAW") / folder / file, encoding='utf-8') as file:
+        file_results = file.read()
+    
+    return file_results
+
 
 if __name__ == "__main__":
     search_index("software")

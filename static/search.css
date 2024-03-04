@@ -89,3 +89,15 @@ body{
     padding-left: 1rem;
     font-weight: 600;
 }
+
+.resultText {
+    font-family: 'Figtree', sans-serif;
+}
+
+.pagination-container {
+    text-align: center;
+}
+
+.pagination-container div {
+    display: inline-block;
+}

@@ -9,6 +9,7 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='search.css') }}">
 </head>
 <body>
+    
     <div class="main-container">
         <div class="corner">
             <div class="img-container-corner" onclick="window.location.href = '/'">
@@ -20,13 +21,39 @@
         </div>
         <div class="results-container">
             <div class="total">
-                {{num_results}}
+                <br>
+                Total Searched Results: {{num_results}}
+                <br>
             </div>
             <ul class="results-list">
                 {% for url in results %}
-                    <li>{{ url }}</li>
+                <li>
+                    <p class='resultText'>
+                        <a href="{{ url['id'] }}">{{ url['title'] }}</a>
+                        <pre>{{ url['link'] }}</pre>
+                        <pre><span class="words">{{ url['words'] }}</span></pre>
+                    </p>
+                    <br>
+                </li>
                 {% endfor %}
             </ul>
+
+            {% if num_pages > 1 %}
+            <div class="pagination-container">
+                <div>
+                    {% if page > 1 %}
+                    <a href="{{ url_for('process_form', page=page - 1, word_search=word_search) }}">Previous</a>
+                    {% endif %}
+
+                    Page {{ page }} of {{ num_pages }}
+
+                    {% if num_pages > page %}
+                    <a href="{{ url_for('process_form', page=page + 1, word_search=word_search) }}">Next</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        
         </div>
     </div>
 </body>
