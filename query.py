@@ -5,7 +5,7 @@ from pathlib import Path
 import numpy as np
 import re
 from bs4 import BeautifulSoup
-
+from tokenizer import lemmatize_text
 DATASAVE = "mongodb+srv://proj3Cluster:idepZy2mBvChOvan@projectcluster.5idbqzt.mongodb.net/"
 DATASAVE_TWO = "mongodb+srv://jasonhw3:EBl154EMmvjllXLL@cluster0.tgq8vgu.mongodb.net/?retryWrites=true&w=majority"
 DATABASE = "Database"
@@ -148,7 +148,7 @@ def cosine(index: dict, inverted_index: dict, term_input: str) -> list[tuple]:
     sorted_scores = sorted(scores, key=lambda x: x[1], reverse=True)
     return sorted_scores
 
-def tf_idf_scoring(index: dict, term_input: str)-> list[tuple]:
+def tf_idf_scoring(index: dict, inverted_index: dict, term_input: str)-> list[tuple]:
     """
     Scores using the sum of tf.idf values, then normalized
     """
@@ -172,7 +172,78 @@ def tf_idf_scoring(index: dict, term_input: str)-> list[tuple]:
     sorted_scores = sorted(scores, key=lambda x: x[1], reverse=True)
     return sorted_scores
 
+def meta_scoring(index: dict, inverted_index: dict, term_input: str)-> list[tuple]:
+    """
+    Scores using the sum of metatag_score values, then normalized
+    """
+    # Get query vector
+    term_query = term_input.split()
+    # get sum meta_tag scoring for each doc
+    scores = []
+    meta_score_list = np.empty(len(index))
+    for count, doc_id in enumerate(index.keys()):
+        total = 0
+        for term in term_query:
+            if term in index[doc_id]:
+                total += index[doc_id][term].idf
+        scores.append([doc_id, total])
+        meta_score_list[count] = total
+    # normalize tf-idf
+    norm_factor = np.linalg.norm(meta_score_list)
+    for i in range(len(scores)):
+        scores[i][1] = scores[i][1] / norm_factor
+    sorted_scores = sorted(scores, key=lambda x: x[1], reverse=True)
+    return sorted_scores
+
+def word_proximity(index: dict, inverted_index: dict, term_input: str)-> list[tuple]:
+    """
+    Scores using word proximity. WIll not work with only a single query
+    """
+    # Get query vector
+    term_query = set(term_input.split())
+    # get sum meta_tag scoring for each doc
+    scores = []
+    score_list = np.empty(len(index))
+    for count, doc_id in enumerate(index.keys()):
+        skip = False
+        word_positions = []
+        for term in term_query:
+            if term in index[doc_id]:
+                word_positions.append(index[doc_id][term].position)
+            else:
+                scores.append([doc_id, 0])
+                score_list[count] = 0
+                skip = True
+                continue
+        if skip:
+            continue
+        min_dist = None
+        continue_loop = True
+        while continue_loop:
+            positions = []
+            for x in word_positions:
+                positions.append(x[0])
+            dist = max(positions) - min(positions)
+            if min_dist is None or dist < min_dist:
+                min_dist = dist
+            for x in word_positions:
+                if x[0] == min(positions):
+                    x.pop(0)
+                    break
+            for x in word_positions:
+                if len(x) == 0:
+                    continue_loop = False
+        scores.append([doc_id, 1/min_dist])
+        score_list[count] = 1/min_dist
+    # normalize tf-idf
+    norm_factor = np.linalg.norm(score_list)
+    for i in range(len(scores)):
+        scores[i][1] = scores[i][1] / norm_factor
+    sorted_scores = sorted(scores, key=lambda x: x[1], reverse=True)
+    return sorted_scores
+
 def query(term_input: str) -> list[str]:
+    term_input = " ".join(lemmatize_text(term_input))
     loaded_bookmarks = LoadBookMark()
     term_set = set(term_input.split())
     index = {}
@@ -180,10 +251,11 @@ def query(term_input: str) -> list[str]:
     # Structure for index
     # "folder": {"term": stats, "computer": stats(count=4,position=[3],idf=.23,metatag=1)}
     # inverted index is as expected
+    remove_term = set()
     for term in term_set:
         query_result = search_index(term)
         if query_result is None:
-            term_set.discard(term)
+            remove_term.add(term)
         else:
             res = query_result.split(" | ")
             inverted_index[term] = res
@@ -197,15 +269,25 @@ def query(term_input: str) -> list[str]:
                     index[doc_id].update({term: doc_stats})
                 else:
                     index[doc_id] = {term: doc_stats}
+    for term in remove_term:
+        term_input = term_input.replace(term, "")
+        term_set.discard(term)
     # Initialize dictionary containing document and their score 
     # this format to update after each rank system
     doc_score = {doc_id: 0 for doc_id in index}
-    cosine_scores = cosine(index, inverted_index, term_input)
-    for doc_id, score in cosine_scores:
-        doc_score[doc_id] += score * 1
-    tf_idf_sum = tf_idf_scoring(index, term_input)
-    for doc_id, score in tf_idf_sum:
-        doc_score[doc_id] += score * 1
+    scoring_functions = [
+        (cosine, 1, 1),
+        (tf_idf_scoring, 1, 1),
+        (meta_scoring, 1, 1),
+        (word_proximity, 1, 3)
+    ]
+
+    for func, weight, query_size_requirement in scoring_functions:
+        if len(term_set) >= query_size_requirement:
+            scores = func(index, inverted_index, term_input)
+            for doc_id, value in scores:
+                doc_score[doc_id] += value * weight
+
     ranked_urls = [loaded_bookmarks.find_query(k) for k, v in sorted(doc_score.items(), key=lambda item: item[1], reverse=True)]
     ranked_doc_ids = [k[0] for k in sorted(doc_score.items(), key=lambda item: item[1], reverse=True)]
     return ranked_urls, ranked_doc_ids

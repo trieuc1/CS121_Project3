@@ -98,7 +98,7 @@ def lemmatize_text(html: str) ->list[str]:
     """
     if html:
         result = []
-        pos_tag_list = nltk.pos_tag(word_tokenize(html))
+        pos_tag_list = nltk.pos_tag(word_tokenize(html.lower()))
         for pos_tag in pos_tag_list: 
             word = pos_tag[0]
             word_tag = convert_tag(pos_tag[1]) #because its a different tag than lemmetize WordNet
