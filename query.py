@@ -248,11 +248,11 @@ def word_proximity(index: dict, inverted_index: dict, term_input: str)-> list[tu
                 # if the first position in the list of positions is the min, remove it
                 if x[0] == min(positions):
                     x.pop(0)
+                    # if there are no more occurences of the term, stop the while loop
+                    if len(x) == 0:
+                        continue_loop = False
+                    # stop for loop
                     break
-            for x in word_positions:
-                # if there are no more occurences of the term, stop the while loop
-                if len(x) == 0:
-                    continue_loop = False
 
         # add the score of the word proximity
         scores.append([doc_id, 1/min_dist])
