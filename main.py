@@ -42,7 +42,7 @@ def process_form():
     return render_template('results.html', results=return_results, num_results=num_results, page=page, num_pages=num_pages, word_search=word_search)
 
         
-@app.route('/<path:url>')
+@app.route('/show/<path:url>')
 def dynamic_page(url):
     print(f"User requests for page url: {url}")
     html_info = query.get_html_info(url)

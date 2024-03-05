@@ -29,7 +29,7 @@
                 {% for url in results %}
                 <li>
                     <p class='resultText'>
-                        <a href="{{ url['id'] }}">{{ url['title'] }}</a>
+                        <a href="show/{{ url['id'] }}">{{ url['title'] }}</a>
                         <pre>{{ url['link'] }}</pre>
                         <pre><span class="words">{{ url['words'] }}</span></pre>
                     </p>
