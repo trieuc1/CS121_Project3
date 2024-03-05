@@ -15,7 +15,7 @@ import time
 #Below is all of the stop words from nltk + spacy
 
 STOP_WORDS = set(list(stopwords.words('english')) + list(spacy.load('en_core_web_sm').Defaults.stop_words))
-NUMBER_OF_GRAMS = 1
+NUMBER_OF_GRAMS = 2
 WEBPAGES_PATH = "WEBPAGES_RAW"
 LEMMATIZER = WordNetLemmatizer()
 TAGS = ["title", "h1", "h2", "h3", "h4", "h5", "h6", "b"]
@@ -118,7 +118,7 @@ def tokenize(corpus: Corpus, book_id: str, lemmatized: list[str], tags: list[tup
     """
     n_grams = list(zip(*[lemmatized[i:] for i in range(n)]))
     n_grams = [(' '.join(i)).strip().lower() for i in n_grams]
-    n_tags = list(zip(*[tags[i:] for i in range(n)]))
+    n_tags = list(zip(*[tags[i:] for i in range(1)]))
     new_tags = []
     for tag in n_tags:
         token_string = ""

@@ -86,9 +86,41 @@ class Document:
         """
         indices = self.word_count[token]
         score = 0
-        for tup in self.tags:
-            if tup[0] == token:
-                score += 2
+        if len(token.split(" ")) >= 2:
+            tags_matrix = {word: {} for word in token.split(" ")}
+            for word, html_tag in self.tags:
+                if word in tags_matrix.keys():
+                    html_tag = html_tag[0]
+                    if html_tag not in tags_matrix[word].keys():
+                        tags_matrix[word][html_tag] = 1
+                    else:
+                        tags_matrix[word][html_tag] += 1
+            # Now it should be this format:
+            # {
+            #     "test": {
+            #         "p": 3,
+            #         "title": 2
+            #     }
+            #     "bro": {
+            #         "p": 1
+            #     }
+            # }
+            list_of_tags = []
+            for word, tag_dict in tags_matrix.items():
+                list_of_tags.append(set(tag_dict.keys()))
+            shared_tags = set.intersection(*list_of_tags)
+            for tag in shared_tags:
+                min_count = 0
+                for word, tag_dict in tags_matrix.items():
+                    if min_count == 0:
+                        min_count = tags_matrix[word][tag]
+                    else:
+                        min_count = min(tags_matrix[word][tag], min_count)
+                score += 2 * min_count
+        else:
+            for tup in self.tags:
+                if tup[0] == token:
+                    score += 2
         score += indices - (score / 2)
         return score / indices
         

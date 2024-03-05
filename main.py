@@ -54,20 +54,20 @@ if __name__ == "__main__":
     # Registers a shutdown hook to save frontier state upon unexpected shutdown
     # Instantiates a crawler object and starts crawling
 
-    # print("Please Select an Option:")
-    # print("1) Update the Index")
-    # print("2) Get the Search Results from the given Index")
-    # print("3) To clear the index")
-    # print("4) To get all of the terms in the index")
-    # print("5) To upload JSON file to the index")
-    # user_input = input("Please type 1/2/3/4/5:")
+    print("Please Select an Option:")
+    print("1) Update the Index")
+    print("2) Get the Search Results from the given Index")
+    print("3) To clear the index")
+    print("4) To get all of the terms in the index")
+    print("5) To upload JSON file to the index")
+    user_input = input("Please type 1/2/3/4/5:")
 
-    # if user_input == "1":
-    #     corpus = Corpus()
-    #     atexit.register(corpus.dump)
-    #     corpus = initialize_corpus(corpus)
-    #     atexit.unregister(corpus.dump)
-    #     corpus.dump()
+    if user_input == "1":
+        corpus = Corpus()
+        atexit.register(corpus.dump)
+        corpus = initialize_corpus(corpus)
+        atexit.unregister(corpus.dump)
+        corpus.dump()
     # elif user_input == "2":
     #     user_input = input("Enter Your Search Query: ").lower().strip()
 
@@ -82,5 +82,5 @@ if __name__ == "__main__":
     #     query.all_terms()
     # elif user_input == "5":
     #     insert_json()
-    app.run(host='127.0.0.1', port=5000)
+    #app.run(host='127.0.0.1', port=5000)
     
