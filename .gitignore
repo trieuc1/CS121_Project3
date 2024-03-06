@@ -1,2 +1,4 @@
 WEBPAGES_RAW
 corpus.json
+__pycache__
+2_gram_corpus.json

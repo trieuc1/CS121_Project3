@@ -106,13 +106,11 @@ def all_terms():
         
     print(list_of_terms)
 
-def cosine(index: dict, inverted_index: dict, term_input: str) -> list[tuple]:
+def cosine(index: dict, inverted_index: dict, term_query: str) -> list[tuple]:
     """
     returns the cosine similarity score of each doc based on the idf of the query and 
     the doc's tf_idf score
     """
-    # Get query vector
-    term_query = term_input.split()
     term_idf = {}
 
     # -------- calculating idf for each query term ---------
@@ -151,12 +149,10 @@ def cosine(index: dict, inverted_index: dict, term_input: str) -> list[tuple]:
     sorted_scores = sorted(scores, key=lambda x: x[1], reverse=True)
     return sorted_scores
 
-def tf_idf_scoring(index: dict, inverted_index: dict, term_input: str)-> list[tuple]:
+def tf_idf_scoring(index: dict, inverted_index: dict, term_query: list)-> list[tuple]:
     """
     returns the sorted normalized tf_idf scores of each doc given the users query
     """
-    # Get query vector
-    term_query = term_input.split()
     # get tf, store in term_idf, to be replaced
     # get sum tf-idf score for each doc
     scores = []
@@ -181,12 +177,10 @@ def tf_idf_scoring(index: dict, inverted_index: dict, term_input: str)-> list[tu
     sorted_scores = sorted(scores, key=lambda x: x[1], reverse=True)
     return sorted_scores
 
-def meta_scoring(index: dict, inverted_index: dict, term_input: str)-> list[tuple]:
+def meta_scoring(index: dict, inverted_index: dict, term_query: list)-> list[tuple]:
     """
     returns the sorted normalized metatag scores of each doc given the users query
     """
-    # Get query vector
-    term_query = term_input.split()
     # get sum meta_tag scoring for each doc
     scores = []
 
@@ -210,13 +204,10 @@ def meta_scoring(index: dict, inverted_index: dict, term_input: str)-> list[tupl
     sorted_scores = sorted(scores, key=lambda x: x[1], reverse=True)
     return sorted_scores
 
-def word_proximity(index: dict, inverted_index: dict, term_input: str)-> list[tuple]:
+def word_proximity(index: dict, inverted_index: dict, term_query: list)-> list[tuple]:
     """
     Scores using word proximity. WIll not work with only a single query
     """
-    # Get query vector
-    term_query = set(term_input.split())
-
     # get sum meta_tag scoring for each doc
     scores = []
     score_list = np.empty(len(index))
@@ -270,60 +261,116 @@ def word_proximity(index: dict, inverted_index: dict, term_input: str)-> list[tu
 def query(term_input: str) -> list[str]:
     """
     returns the a list of ranked urls and a list of ranked doc ids given a string input
+
+    Structure for index
+    "folder": {"term": stats, "computer": stats(count=4,position=[3],idf=.23,metatag=1)}
+    inverted index is as expected
     """
     term_input = " ".join(lemmatize_text(term_input))
     loaded_bookmarks = LoadBookMark()
-    term_set = set(term_input.split())
-    index = {}
-    inverted_index = {}
-    # Structure for index
-    # "folder": {"term": stats, "computer": stats(count=4,position=[3],idf=.23,metatag=1)}
-    # inverted index is as expected
-    remove_term = set()
-    for term in term_set:
+
+    term_list_one = term_input.split()
+    term_list_two = []
+    index_one = {}
+    inverted_index_one = {}
+    index_two = {}
+    inverted_index_two = {}
+    remove_term_one = []
+    remove_term_two = []
+
+    if len(term_list_one) < 2:
+        # creating bigram index and inverted index
+        term_list_two = list(zip(*[term_input.split()[i:] for i in range(2)]))
+        term_list_two = [(' '.join(i)).strip().lower() for i in term_list_two]
+        for term in term_list_two:
+        # get all of the postings associated with the term
+            query_result = search_index(term)
+            if query_result is None:
+                remove_term_one.append(term)
+            else:
+                # inverted
+                postings = query_result.split(" | ")
+                inverted_index_one[term] = postings
+                for doc in postings:
+                    doc_info = doc.split(":")
+                    doc_id = doc_info[0]
+                    position_list = doc_info[2].strip("[").strip("]").split(",")
+                    position_list = [int(i) for i in position_list]
+                    doc_stats = Stats(count=int(doc_info[1]), position=position_list, tf_idf = float(doc_info[3]), metatag=float(doc_info[4]))
+                    if doc_id in index_one:
+                        index_one[doc_id].update({term: doc_stats})
+                    else:
+                        index_one[doc_id] = {term: doc_stats}
+        for term in remove_term_two:
+            term_list_one.remove(term)
+
+    # creating one gram index and inverted index
+    for term in term_list_one:
         # get all of the postings associated with the term
         query_result = search_index(term)
         if query_result is None:
-            remove_term.add(term)
+            remove_term_one.append(term)
         else:
-            # inverted_ 
+            # inverted
             postings = query_result.split(" | ")
-            inverted_index[term] = postings
+            inverted_index_one[term] = postings
             for doc in postings:
                 doc_info = doc.split(":")
                 doc_id = doc_info[0]
                 position_list = doc_info[2].strip("[").strip("]").split(",")
                 position_list = [int(i) for i in position_list]
                 doc_stats = Stats(count=int(doc_info[1]), position=position_list, tf_idf = float(doc_info[3]), metatag=float(doc_info[4]))
-                if doc_id in index:
-                    index[doc_id].update({term: doc_stats})
+                if doc_id in index_one:
+                    index_one[doc_id].update({term: doc_stats})
                 else:
-                    index[doc_id] = {term: doc_stats}
-    for term in remove_term:
-        term_input = term_input.replace(term, "")
-        term_set.discard(term)
-    # Initialize dictionary containing document and their score
-    # this format to update after each rank system
-    doc_score = {doc_id: 0 for doc_id in index}
+                    index_one[doc_id] = {term: doc_stats}
+    for term in remove_term_one:
+        term_list_one.remove(term)
     
     # (function, weight, query size requirement)
     scoring_functions = [
         (cosine, 1, 1),
         (tf_idf_scoring, 1, 1),
         (meta_scoring, 1, 1),
-        (word_proximity, 1, 3)
+        (word_proximity, 1, 2)
     ]
+
+    # Initialize dictionary containing document and their score
+    # this format to update after each rank system
+    doc_score_one = {doc_id: 0 for doc_id in index_one}
+    doc_score_two = {}
+
 
     # calculate each of the functions and add their scores together with respect to
     # their associated weight
     for func, weight, query_size_requirement in scoring_functions:
-        if len(term_set) >= query_size_requirement:
-            scores = func(index, inverted_index, term_input)
+        if len(term_list_one) >= query_size_requirement:
+            scores = func(index_one, inverted_index_one, term_list_one)
             for doc_id, value in scores:
-                doc_score[doc_id] += value * weight
+                doc_score_one[doc_id] += value * weight
+    
+    #  now do it for bigrams if the query is long enough
+    if len(index_two != 0):
+        doc_score_two = {doc_id: 0 for doc_id in index_two}
 
-    ranked_urls = [loaded_bookmarks.find_query(k) for k, v in sorted(doc_score.items(), key=lambda item: item[1], reverse=True)]
-    ranked_doc_ids = [k[0] for k in sorted(doc_score.items(), key=lambda item: item[1], reverse=True)]
+        # calculate each of the functions and add their scores together with respect to
+        # their associated weight
+        for func, weight, query_size_requirement in scoring_functions:
+            scores = func(index_two, inverted_index_two, term_list_two)
+            for doc_id, value in scores:
+                doc_score_two[doc_id] += value * weight
+    
+    combined_doc_score = doc_score_one
+    for key in combined_doc_score.keys():
+        doc2_score = doc_score_two.get(key, None)
+        if doc2_score is not None:
+            combined_doc_score[key] += 0.5 * doc2_score
+        else:
+            combined_doc_score[key] = doc2_score
+
+
+    ranked_urls = [loaded_bookmarks.find_query(k) for k, v in sorted(combined_doc_score.items(), key=lambda item: item[1], reverse=True)]
+    ranked_doc_ids = [k[0] for k in sorted(combined_doc_score.items(), key=lambda item: item[1], reverse=True)]
     return ranked_urls, ranked_doc_ids
 
 def get_query_details(doc_id: str) -> dict:
