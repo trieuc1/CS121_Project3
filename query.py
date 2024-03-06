@@ -360,13 +360,15 @@ def query(term_input: str) -> list[str]:
             for doc_id, value in scores:
                 doc_score_two[doc_id] += value * weight
     
+    # combine both doc scores
     combined_doc_score = doc_score_one
-    for key in combined_doc_score.keys():
-        doc2_score = doc_score_two.get(key, None)
-        if doc2_score is not None:
-            combined_doc_score[key] += 0.5 * doc2_score
-        else:
-            combined_doc_score[key] = doc2_score
+    if len(doc_score_two) != 0:
+        for key in combined_doc_score.keys():
+            doc2_score = doc_score_two.get(key, None)
+            if doc2_score is not None:
+                combined_doc_score[key] += 0.5 * doc2_score
+            else:
+                combined_doc_score[key] = doc2_score
 
 
     ranked_urls = [loaded_bookmarks.find_query(k) for k, v in sorted(combined_doc_score.items(), key=lambda item: item[1], reverse=True)]
