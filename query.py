@@ -8,6 +8,8 @@ from bs4 import BeautifulSoup
 from tokenizer import lemmatize_text
 DATASAVE = "mongodb+srv://proj3Cluster:idepZy2mBvChOvan@projectcluster.5idbqzt.mongodb.net/"
 DATASAVE_TWO = "mongodb+srv://jasonhw3:EBl154EMmvjllXLL@cluster0.tgq8vgu.mongodb.net/?retryWrites=true&w=majority"
+TWO_GRAM_SAVE = "mongodb+srv://jasonhw3:xw24GXGcWhyi31Ly@cluster0.57kbxtr.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+TWO_GRAM_SAVE_TWO = "mongodb+srv://jasonhw3:llZUsmhqHCeNNCwl@cluster0.tulx44z.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 DATABASE = "Database"
 COLLECTION = "Collection"
 BOOKKEEPER_PATH = Path("WEBPAGES_RAW") / Path("bookkeeping.json")
@@ -69,8 +71,13 @@ def search_index(term_input: str) -> str:
     """
     Loads the specific queried Index and prints the links out
     """
-    mongodbInstance = mongodb.DataSave(DATASAVE, DATABASE, COLLECTION)
-    mongodbInstance_two = mongodb.DataSave(DATASAVE_TWO, DATABASE, COLLECTION)
+
+    if len(term_input.split(" ")) == 2:
+        mongodbInstance = mongodb.DataSave(TWO_GRAM_SAVE, DATABASE, COLLECTION)
+        mongodbInstance_two = mongodb.DataSave(TWO_GRAM_SAVE_TWO, DATABASE, COLLECTION)
+    else:
+        mongodbInstance = mongodb.DataSave(DATASAVE, DATABASE, COLLECTION)
+        mongodbInstance_two = mongodb.DataSave(DATASAVE_TWO, DATABASE, COLLECTION)
 
     try:
         query_result = mongodbInstance.get_query(term_input)[term_input]
@@ -81,6 +88,7 @@ def search_index(term_input: str) -> str:
         except TypeError:
             print("Unable to search for term in the 2nd database. Term does not exist.")
             return
+
     return query_result
     
 def all_terms():
@@ -350,7 +358,7 @@ def query(term_input: str) -> list[str]:
                 doc_score_one[doc_id] += value * weight
     
     #  now do it for bigrams if the query is long enough
-    if len(index_two != 0):
+    if len(index_two) != 0:
         doc_score_two = {doc_id: 0 for doc_id in index_two}
 
         # calculate each of the functions and add their scores together with respect to
@@ -405,4 +413,5 @@ def get_html_info(doc_id: str) -> str:
 
 
 if __name__ == "__main__":
-    search_index("software")
+    test_result = search_index("uci")
+    print(test_result)

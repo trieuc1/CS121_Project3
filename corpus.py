@@ -8,6 +8,8 @@ from pathlib import Path
 
 DATASAVE = "mongodb+srv://proj3Cluster:idepZy2mBvChOvan@projectcluster.5idbqzt.mongodb.net/"
 DATASAVE_TWO = "mongodb+srv://jasonhw3:EBl154EMmvjllXLL@cluster0.tgq8vgu.mongodb.net/?retryWrites=true&w=majority"
+TWO_GRAM_SAVE = "mongodb+srv://jasonhw3:xw24GXGcWhyi31Ly@cluster0.57kbxtr.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+TWO_GRAM_SAVE_TWO = "mongodb+srv://jasonhw3:llZUsmhqHCeNNCwl@cluster0.tulx44z.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 DATABASE = "Database"
 COLLECTION = "Collection"
 
@@ -145,6 +147,13 @@ class Corpus:
         mongodbInstance_two = mongodb.DataSave(DATASAVE_TWO, DATABASE, COLLECTION)
         mongodbInstance_two.remove_collection()
     
+    def clear_index_n_gram(self):
+        mongodbInstance = mongodb.DataSave(TWO_GRAM_SAVE, DATABASE, COLLECTION)
+        mongodbInstance.remove_collection()
+        mongodbInstance = mongodb.DataSave(TWO_GRAM_SAVE_TWO, DATABASE, COLLECTION)
+        mongodbInstance.remove_collection()
+
+    
     
 def insert_json(path="corpus.json"):
     """
@@ -180,4 +189,42 @@ def insert_json(path="corpus.json"):
     except Exception as e:
         print("Full, moving onto the second database")
         mongodbInstance = mongodb.DataSave(DATASAVE_TWO, DATABASE, COLLECTION)
+        mongodbInstance.insert_all(dict_list)
+
+    
+def insert_n_gram_json(path="2_gram_corpus.json"):
+    """
+    Uploads json to corpus
+    """
+    
+    if (Path(path).is_file() == False):
+        print("Path isn't a file")
+        return
+    corpus_dict = {}
+    dict_list = []
+    with open(path, encoding="utf-8") as in_file:
+        corpus_dict = json.load(in_file)
+    
+    total = len(corpus_dict)
+    count = 0
+    mongodbInstance = mongodb.DataSave(TWO_GRAM_SAVE, DATABASE, COLLECTION)
+    for key, value in corpus_dict.items():
+        dict_list.append({key: value})
+        print(f"{(count/total)*100:.2f}% \t-- total: {count} \t --completed: {total}     ", end="\r")
+        if len(dict_list) == 35000:
+            try:
+                mongodbInstance.insert_all(dict_list)
+            except Exception as e:
+                print("Full, moving onto the second database")
+                mongodbInstance = mongodb.DataSave(TWO_GRAM_SAVE_TWO, DATABASE, COLLECTION)
+                mongodbInstance.insert_all(dict_list)
+
+            dict_list.clear()
+        count += 1
+    try:
+        mongodbInstance = mongodb.DataSave(TWO_GRAM_SAVE, DATABASE, COLLECTION)
+        mongodbInstance.insert_all(dict_list)
+    except Exception as e:
+        print("Full, moving onto the second database")
+        mongodbInstance = mongodb.DataSave(TWO_GRAM_SAVE_TWO, DATABASE, COLLECTION)
         mongodbInstance.insert_all(dict_list)

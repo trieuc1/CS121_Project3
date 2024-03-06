@@ -1,6 +1,6 @@
 import atexit
 from tokenizer import initialize_corpus 
-from corpus import Corpus, insert_json
+from corpus import Corpus, insert_json, insert_n_gram_json
 from flask import Flask, render_template, request, Response
 import query
 
@@ -60,7 +60,9 @@ if __name__ == "__main__":
     print("3) To clear the index")
     print("4) To get all of the terms in the index")
     print("5) To upload JSON file to the index")
-    user_input = input("Please type 1/2/3/4/5:")
+    print("6) Upload 2 gram json")
+    print("7) Clear 2 gram index")
+    user_input = input("Please type 1/2/3/4/5/6/7:")
 
     if user_input == "1":
         corpus = Corpus()
@@ -68,19 +70,23 @@ if __name__ == "__main__":
         corpus = initialize_corpus(corpus)
         atexit.unregister(corpus.dump)
         corpus.dump()
-    # elif user_input == "2":
-    #     user_input = input("Enter Your Search Query: ").lower().strip()
-
-    #     results = query.query(user_input)
-    #     for link in results:
-    #         print(link)
-    #     print("Finished.")
-    # elif user_input == "3":
-    #     corpus = Corpus()
-    #     corpus.clear_index()
-    # elif user_input == "4":
-    #     query.all_terms()
-    # elif user_input == "5":
-    #     insert_json()
-    #app.run(host='127.0.0.1', port=5000)
+    elif user_input == "2":
+        user_input = input("Enter Your Search Query: ").lower().strip()
+        results = query.query(user_input)
+        for link in results:
+            print(link)
+        print("Finished.")
+    elif user_input == "3":
+        corpus = Corpus()
+        corpus.clear_index()
+    elif user_input == "4":
+        query.all_terms()
+    elif user_input == "5":
+        insert_json()
+    elif user_input == "6":
+        insert_n_gram_json()
+    elif user_input=="7":
+        corpus = Corpus()
+        corpus.clear_index_n_gram()
+    app.run(host='127.0.0.1', port=5000)
     
