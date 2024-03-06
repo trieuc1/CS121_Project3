@@ -13,6 +13,7 @@ TWO_GRAM_SAVE_TWO = "mongodb+srv://jasonhw3:llZUsmhqHCeNNCwl@cluster0.tulx44z.mo
 DATABASE = "Database"
 COLLECTION = "Collection"
 BOOKKEEPER_PATH = Path("WEBPAGES_RAW") / Path("bookkeeping.json")
+PAGERANK_PATH = Path('pagerank.json')
 CORPUS_SIZE = 37424
 Stats = namedtuple('Stats', 'count, position, tf_idf, metatag')
 
@@ -28,6 +29,23 @@ class LoadBookMark:
                 self.jsonResult = json.loads(bookkeeper_file.read())
 
     def find_query(self, id_input:str):
+        """
+        returns the link associated with the doc id
+        """
+        return self.jsonResult[id_input]
+
+class PageRank:
+
+    def __init__(self):
+        self.jsonResult = None
+        self.load_page_rank_json()
+    
+    def load_page_rank_json(self):
+        if self.jsonResult == None:
+            with open(PAGERANK_PATH, "r", encoding="utf-8") as file:
+                self.jsonResult = json.loads(file.read())
+
+    def find_page_rank(self, id_input:str):
         """
         returns the link associated with the doc id
         """
@@ -67,12 +85,12 @@ def search_all_index():
             print(f"-----------------------------------------------------------------------")
 
 
-def search_index(term_input: str) -> str:
+def search_index(term_input: str, n_gram: int) -> str:
     """
     Loads the specific queried Index and prints the links out
     """
 
-    if len(term_input.split(" ")) == 2:
+    if n_gram == 2:
         mongodbInstance = mongodb.DataSave(TWO_GRAM_SAVE, DATABASE, COLLECTION)
         mongodbInstance_two = mongodb.DataSave(TWO_GRAM_SAVE_TWO, DATABASE, COLLECTION)
     else:
@@ -266,6 +284,7 @@ def word_proximity(index: dict, inverted_index: dict, term_query: list)-> list[t
     sorted_scores = sorted(scores, key=lambda x: x[1], reverse=True)
     return sorted_scores
 
+
 def query(term_input: str) -> list[str]:
     """
     returns the a list of ranked urls and a list of ranked doc ids given a string input
@@ -276,6 +295,7 @@ def query(term_input: str) -> list[str]:
     """
     term_input = " ".join(lemmatize_text(term_input))
     loaded_bookmarks = LoadBookMark()
+    loaded_pageranks = PageRank()
 
     term_list_one = term_input.split()
     term_list_two = []
@@ -286,13 +306,14 @@ def query(term_input: str) -> list[str]:
     remove_term_one = []
     remove_term_two = []
 
-    if len(term_list_one) < 2:
+    if len(term_list_one) > 1:
+        print("entering")
         # creating bigram index and inverted index
         term_list_two = list(zip(*[term_input.split()[i:] for i in range(2)]))
         term_list_two = [(' '.join(i)).strip().lower() for i in term_list_two]
         for term in term_list_two:
         # get all of the postings associated with the term
-            query_result = search_index(term)
+            query_result = search_index(term, 2)
             if query_result is None:
                 remove_term_one.append(term)
             else:
@@ -315,7 +336,7 @@ def query(term_input: str) -> list[str]:
     # creating one gram index and inverted index
     for term in term_list_one:
         # get all of the postings associated with the term
-        query_result = search_index(term)
+        query_result = search_index(term, 1)
         if query_result is None:
             remove_term_one.append(term)
         else:
@@ -374,9 +395,13 @@ def query(term_input: str) -> list[str]:
         for key in combined_doc_score.keys():
             doc2_score = doc_score_two.get(key, None)
             if doc2_score is not None:
+                # add doc 2 score and page rank
                 combined_doc_score[key] += 0.5 * doc2_score
+                combined_doc_score[key] += loaded_pageranks.find_page_rank(key) / 3
             else:
+                # add page rank
                 combined_doc_score[key] = doc2_score
+                combined_doc_score[key] += loaded_pageranks.find_page_rank(key) / 3
 
 
     ranked_urls = [loaded_bookmarks.find_query(k) for k, v in sorted(combined_doc_score.items(), key=lambda item: item[1], reverse=True)]
@@ -412,6 +437,6 @@ def get_html_info(doc_id: str) -> str:
     return file_results
 
 
-if __name__ == "__main__":
-    test_result = search_index("uci")
-    print(test_result)
+# if __name__ == "__main__":
+#     test_result = search_index("uci")
+#     print(test_result)
