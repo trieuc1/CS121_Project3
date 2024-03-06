@@ -397,11 +397,11 @@ def query(term_input: str) -> list[str]:
             if doc2_score is not None:
                 # add doc 2 score and page rank
                 combined_doc_score[key] += 0.5 * doc2_score
-                combined_doc_score[key] += loaded_pageranks.find_page_rank(key) / 3
+                combined_doc_score[key] += loaded_pageranks.find_page_rank(key) * 10**5
             else:
                 # add page rank
                 combined_doc_score[key] = doc2_score
-                combined_doc_score[key] += loaded_pageranks.find_page_rank(key) / 3
+                combined_doc_score[key] += loaded_pageranks.find_page_rank(key) * 10**5
 
 
     ranked_urls = [loaded_bookmarks.find_query(k) for k, v in sorted(combined_doc_score.items(), key=lambda item: item[1], reverse=True)]
