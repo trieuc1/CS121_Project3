@@ -315,7 +315,7 @@ def query(term_input: str) -> list[str]:
         # get all of the postings associated with the term
             query_result = search_index(term, 2)
             if query_result is None:
-                remove_term_one.append(term)
+                remove_term_two.append(term)
             else:
                 # inverted
                 postings = query_result.split(" | ")
@@ -331,7 +331,7 @@ def query(term_input: str) -> list[str]:
                     else:
                         index_one[doc_id] = {term: doc_stats}
         for term in remove_term_two:
-            term_list_one.remove(term)
+            term_list_two.remove(term)
 
     # creating one gram index and inverted index
     for term in term_list_one:
