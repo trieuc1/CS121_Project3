@@ -34,13 +34,15 @@ def process_form():
 
     return_results = []
     for link, doc_id in zip(paginated_results, paginated_doc_ids):
-        title = query.get_query_details(doc_id)
-        return_results.append({'link': link, 'title': title, 'id': doc_id})
+        title, description = query.get_query_details(doc_id, search_input)
+        return_results.append({'link': link, 'title': title, 'id': doc_id, 'description': description})
 
     num_pages = (num_results + per_page - 1) // per_page
-
-    return render_template('results.html', results=return_results, num_results=num_results, page=page, num_pages=num_pages, word_search=word_search)
-
+    
+    if (num_results != 0):
+        return render_template('results.html', results=return_results, num_results=num_results, page=page, num_pages=num_pages, word_search=word_search)
+    else:
+        return render_template('noResult.html')
         
 @app.route('/show/<path:url>')
 def dynamic_page(url):

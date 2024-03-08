@@ -408,20 +408,27 @@ def query(term_input: str) -> list[str]:
     ranked_doc_ids = [k[0] for k in sorted(combined_doc_score.items(), key=lambda item: item[1], reverse=True)]
     return ranked_urls, ranked_doc_ids
 
-def get_query_details(doc_id: str) -> dict:
+def get_query_details(doc_id: str, word_input: str) -> dict:
     """
     returns the text inside the html tag for title given the doc id
     - used for gui
     """
     folder = doc_id[:doc_id.find("/")]
     file = doc_id[doc_id.find("/") + 1:]
+    description_result = "No Description"
 
     with open(Path("WEBPAGES_RAW") / folder / file, encoding='utf-8') as f:
         soup = BeautifulSoup(f.read(), 'html.parser')
         title_tag = soup.find('title')
         title = title_tag.text.strip() if title_tag else "Unknown Title"
+        text = soup.get_text()
+        tmpText = text.lower()
+        index = tmpText.find(word_input)
+        
+        if index != -1:
+            description_result = " ".join(text[index:].split()[:25]) + "..."
                     
-    return title
+    return title, description_result
 
 
 def get_html_info(doc_id: str) -> str:
